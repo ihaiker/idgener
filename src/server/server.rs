@@ -183,11 +183,6 @@ pub async fn embedded(
     if let Some(id) = &config.id {
         log::info!("make cluster, self id: {}", id);
         let _ = init_self(&bind_address, state.clone(), Some(*id))?;
-        let mut rc = stopper.subscribe();
-        futures.push(tokio::spawn(async move {
-            let _ = rc.recv().await;
-            Ok(())
-        }));
     } else if let Some(multicast_address) = &config.multicast_address {
         log::info!("find multicast address: {}", &multicast_address);
         let timeout = Some(Duration::from_secs(
@@ -227,6 +222,14 @@ pub async fn embedded(
         init_self(&bind_address, state.clone(), None)?;
     }
 
+    if futures.len() == 0 {
+        let mut rc = stopper.subscribe();
+        futures.push(tokio::spawn(async move {
+            let _ = rc.recv().await;
+            Ok(())
+        }));
+    }
+
     let mut stopper = stopper.subscribe();
     let srv = server.clone();
 
@@ -254,7 +257,8 @@ mod test {
     use std::thread;
     use std::time::Duration;
 
-    use actix_web::{rt, web};
+    use actix_web::web;
+    use anyhow::Context;
     use futures::executor::block_on;
     use http_client::http_types::StatusCode;
     use http_client::{HttpClient, Request};
@@ -263,8 +267,8 @@ mod test {
     use crate::server::server::{bind, CLIENT};
     use crate::server::AppState;
 
-    #[test]
-    fn test_bind() {
+    #[actix_rt::test]
+    async fn test_bind() -> anyhow::Result<()> {
         logger::init(true);
 
         let (tx, rx) = std::sync::mpsc::channel();
@@ -291,15 +295,15 @@ mod test {
             log::info!("closed server");
         });
 
-        let _ = rt::System::new("block").block_on(server);
+        server.await.context("runner server")
     }
 
     #[test]
     fn http_client() {
-        let req = Request::get("https://baidu.com");
+        let req = Request::get("http://ip-api.com/json");
         let resp = block_on(CLIENT.send(req));
         assert!(resp.is_ok());
         let resp = resp.unwrap();
-        assert_eq!(StatusCode::Found, resp.status());
+        assert_eq!(StatusCode::Ok, resp.status());
     }
 }

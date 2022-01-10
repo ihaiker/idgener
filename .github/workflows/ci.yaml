@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    paths:
+      - '**.rs'
+  pull_request:
+    paths:
+      - '**.rs'
+      
+jobs:
+  test:
+    strategy:
+      matrix:
+        os:
+          - macos
+          - windows
+          - ubuntu
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
+    timeout-minutes: 90
+
+    env:
+      CARGO_TERM_COLOR: always
+      RUST_BACKTRACE: full
+      RUSTC_FORCE_INCREMENTAL: 1
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 5
+          submodules: recursive
+      - name: Install Rust
+        uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: 1.57.0
+
+      - name: Runner test
+        run: |
+          cargo test

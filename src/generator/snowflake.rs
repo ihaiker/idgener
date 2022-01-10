@@ -27,6 +27,7 @@ pub struct Snowflake {
 #[derive(Debug)]
 pub struct SnowFlakeId(u64);
 
+#[allow(dead_code)]
 impl SnowFlakeId {
     fn snowflake_timestamp(&self) -> u64 {
         (self.0 >> TIMESTAMP_LEFT_SHIFT) + STANDARD_EPOCH
