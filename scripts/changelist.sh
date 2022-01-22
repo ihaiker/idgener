@@ -14,12 +14,12 @@ if [[ -f "$GITHUB_WORKSPACE/docs/${tag}.md" ]]; then
 fi
 
 if [ "$previous_tag" == "nil" ]; then
-cat <<EOF | tee $output
+cat >> $output <<EOF
 ## Release $tag
 [commits](${repo}/commits)
 EOF
 else
-cat <<EOF | tee $output
+cat >> $output <<EOF
 ## What Different
 [${previous_tag}...${tag}](${repo}/compare/${previous_tag}...${tag})
 ## Full Changelog

@@ -109,18 +109,19 @@ impl Options {
         I: IntoIterator + Clone,
         I::Item: Into<OsString> + Clone,
     {
+        let config_name = format!("etc/{}.yaml", env!("CARGO_PKG_NAME"));
         let mut default_config = Options::default();
         let from_args_config = Options::from_iter(args.clone());
 
         let config: Option<String> = match from_args_config.config {
             Some(ref cfg) => Some(cfg.to_string()), //use defined config file
             //use system default config file
-            None if Path::new("etc/idgend.yaml").exists() => Some(String::from("etc/idgend.yaml")),
+            None if Path::new(&config_name).exists() => Some(config_name),
             _ => None,
         };
 
         if let Some(ref config) = config {
-            info!("use config: {}", config);
+            info!("use config file: {}", config);
 
             let mut hash = MergeYamlHash::new();
             hash.merge(serde_yaml::to_string(&default_config)?.as_str());

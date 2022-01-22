@@ -2,22 +2,19 @@ name: ci
 
 on:
   push:
-    paths:
-      - '**.rs'
+    branches: ["main", "release-*"]
   pull_request:
-    paths:
-      - '**.rs'
 
 jobs:
   test:
     strategy:
       matrix:
         os:
-          - macos
-          - windows
-          - ubuntu
+          - macos-latest
+          - windows-latest
+          - ubuntu-latest
     name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 90
 
     env:
@@ -39,7 +36,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install Rust
         uses: hecrj/setup-rust-action@v1
         with:
