@@ -7,7 +7,7 @@ on:
   pull_request:
     paths:
       - '**.rs'
-      
+
 jobs:
   test:
     strategy:
@@ -31,6 +31,15 @@ jobs:
         with:
           fetch-depth: 5
           submodules: recursive
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Install Rust
         uses: hecrj/setup-rust-action@v1
         with:
